@@ -15,7 +15,7 @@ class ProduitController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Produit::with(['category', 'marque', 'tags'])
-            ->where('actif', true);
+            ->where('en_vedette', true);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -31,15 +31,22 @@ class ProduitController extends Controller
             });
         }
 
+        if ($request->filled('origin')) {
+            $query->where('pays_origine', $request->origin);
+        }
+
         if ($request->filled('marque')) {
             $query->whereHas('marque', function ($q) use ($request) {
                 $q->where('slug', $request->marque);
             });
         }
 
-        if ($request->filled('tag')) {
-            $query->whereHas('tags', function ($q) use ($request) {
-                $q->where('slug', $request->tag);
+        if ($request->filled('tags')) {
+            $tags = explode(',', $request->tags);
+            $query->where(function ($q) use ($tags) {
+                foreach ($tags as $tag) {
+                    $q->orWhereJsonContains('tags', $tag);
+                }
             });
         }
 
@@ -49,10 +56,6 @@ class ProduitController extends Controller
 
         if ($request->filled('price_max')) {
             $query->where('prix', '<=', $request->price_max);
-        }
-
-        if ($request->filled('en_vedette')) {
-            $query->where('en_vedette', true);
         }
 
         $sort = $request->get('sort', 'created_at');
@@ -68,7 +71,9 @@ class ProduitController extends Controller
         return response()->json(ProduitResource::collection($produits)->additional([
             'filters' => [
                 'categories' => \App\Models\Category::withCount('produits')->get(),
+                'origins' => \App\Models\Origin::all(),
                 'marques' => \App\Models\Marque::withCount('produits')->get(),
+                'tags' => ['sans-gluten', 'fromage', 'snack', 'energisant', 'boisson-gazeuse', 'guarana', 'taurine', 'cafeine', 'churros', 'chocolat', 'patisserie', 'nougat', 'amandes', 'traditionnel', 'sans-sucre', 'tropical', 'gele', 'oursons', 'noir', '70-cacao', 'acai', 'superfood', 'antioxydants', 'biscuits', 'vanille', 'chips', 'sale', 'glace', 'premium', 'the-vert', 'japon', 'ramen', 'epice', 'kimchi', 'coree', 'fermente', 'creme', 'caramel', 'noisettes', 'pate-tartiner', 'coca', 'classique', 'bubble-tea', 'the', 'tapioca', 'fromage', 'surprise', 'mystere', 'box', 'unknown', 'generique', 'beurre', 'economie', 'sans-marque', 'economique', 'varie', 'aleatoire', 'mix'],
             ],
         ]));
     }
