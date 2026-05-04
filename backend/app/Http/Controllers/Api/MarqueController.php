@@ -31,7 +31,6 @@ class MarqueController extends Controller
         }
 
         $produits = Produit::with(['category', 'marque'])
-            ->where('actif', true)
             ->where('marque_id', $marque->id)
             ->latest()
             ->paginate($request->get('per_page', 12));
