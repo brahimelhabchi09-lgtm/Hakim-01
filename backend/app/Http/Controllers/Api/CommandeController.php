@@ -49,7 +49,7 @@ class CommandeController extends Controller
             'adresse_livraison.code_postal' => 'nullable|string|max:10',
             'adresse_facturation' => 'nullable|array',
             'notes' => 'nullable|string|max:1000',
-            'mode_paiement' => 'required|in:cash,virement',
+            'mode_paiement' => 'required|in:cash',
         ]);
 
         $cart = session()->get('cart_' . $user->id, []);
@@ -70,10 +70,6 @@ class CommandeController extends Controller
             foreach ($cart as $produitId => $item) {
                 $produit = Produit::lockForUpdate()->findOrFail($produitId);
 
-                if (!$produit->actif) {
-                    throw new \Exception("Le produit {$produit->nom} n'est plus disponible.");
-                }
-
                 if ($produit->stock < $item['quantite']) {
                     throw new \Exception("Stock insuffisant pour {$produit->nom}.");
                 }
@@ -90,12 +86,14 @@ class CommandeController extends Controller
 
             $commande = Commande::create([
                 'user_id' => $user->id,
-                'total' => $total,
+                'total' => $total - $fraisLivraison,
                 'frais_livraison' => $fraisLivraison,
                 'adresse_livraison' => $request->adresse_livraison,
                 'adresse_facturation' => $request->adresse_facturation ?? $request->adresse_livraison,
                 'notes' => $request->notes,
                 'statut' => 'en_attente',
+                'mode_paiement' => $request->mode_paiement,
+                'statut_paiement' => 'en_attente',
             ]);
 
             foreach ($items as $item) {
