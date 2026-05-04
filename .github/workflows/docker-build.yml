@@ -1,0 +1,27 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t wolfstore-backend ./backend
+
+      - name: Build frontend image
+        run: docker build -t wolfstore-frontend ./frontend
+
+      - name: Run compose
+        run: docker compose up -d
+
+      - name: Health check
+        run: |
+          sleep 30
+          curl -f http://localhost:8000 || exit 1
+          curl -f http://localhost:3000 || exit 1
