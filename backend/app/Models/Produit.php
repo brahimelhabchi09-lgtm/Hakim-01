@@ -31,11 +31,41 @@ class Produit extends Model
     protected static function boot()
     {
         parent::boot();
+
         static::creating(function ($produit) {
-            if (empty($produit->slug)) {
-                $produit->slug = Str::slug($produit->nom);
+            $produit->slug = static::generateUniqueSlug($produit->slug ?: $produit->nom);
+        });
+
+        static::updating(function ($produit) {
+            if ($produit->isDirty('slug')) {
+                $produit->slug = static::generateUniqueSlug($produit->slug, $produit->id);
+            } elseif ($produit->isDirty('nom')) {
+                $produit->slug = static::generateUniqueSlug(Str::slug($produit->nom), $produit->id);
             }
         });
+    }
+
+    public static function generateUniqueSlug($string, $ignoreId = null)
+    {
+        $slug = Str::slug($string);
+        $originalSlug = $slug;
+        $counter = 1;
+
+        $query = static::where('slug', $slug);
+        if ($ignoreId) {
+            $query->where('id', '!=', $ignoreId);
+        }
+
+        while ($query->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+            $query = static::where('slug', $slug);
+            if ($ignoreId) {
+                $query->where('id', '!=', $ignoreId);
+            }
+        }
+
+        return $slug;
     }
 
     public function category(): BelongsTo
