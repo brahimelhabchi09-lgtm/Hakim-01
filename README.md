@@ -1,137 +1,52 @@
-# Mercado Brasileiro 🇧🇷🇲🇦
+# WolfStore BR - E-Commerce Platform
 
-Boutique e-commerce de produits brésiliens authentiques destinés au marché marocain.
+A full-stack e-commerce application built with Laravel (backend) and Vue.js (frontend), containerized with Docker.
 
-## Stack Technique
+## Tech Stack
 
-- **Backend:** Laravel 10.x + PHP 8.2
-- **Frontend:** Vue.js 3 + Vite + TailwindCSS + Pinia
-- **Base de données:** MySQL 8.0
-- **Cache/Queue:** Redis
-- **Containerisation:** Docker + Docker Compose
-- **Authentification:** Laravel Sanctum
+- **Backend**: Laravel 11, PostgreSQL, Redis
+- **Frontend**: Vue 3, Vite, Pinia, Tailwind CSS
+- **Infrastructure**: Docker, Nginx, Mailpit, pgAdmin
 
-## Prérequis
+## Getting Started
 
-- Docker >= 20.10
-- Docker Compose >= 2.0
-- Git
+### Prerequisites
 
-## Installation
+- Docker & Docker Compose
+- Node.js 20+ (for local development)
 
-### 1. Cloner le projet
+### Quick Start
 
 ```bash
-git clone <repository-url>
+# Clone the repository
+git clone https://github.com/brahimelhabchi09-lgtm/Hakim-01.git
 cd Hakim-01
-```
 
-### 2. Configurer les variables d'environnement
-
-```bash
-cp backend/.env.example backend/.env
-```
-
-### 3. Lancer les conteneurs
-
-```bash
+# Start all services
 docker compose up -d
+
+# Run migrations
+docker exec mundo_backend php artisan migrate
+
+# Access the application
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8000
+# Mailpit: http://localhost:8025
+# pgAdmin: http://localhost:5050
 ```
 
-### 4. Installer les dépendances backend
-
-```bash
-docker compose exec backend composer install
-docker compose exec backend cp .env.example .env
-docker compose exec backend php artisan key:generate
-```
-
-### 5. Migrer et peupler la base de données
-
-```bash
-docker compose exec backend php artisan migrate --seed
-```
-
-### 6. Installer les dépendances frontend
-
-```bash
-docker compose exec frontend npm install
-```
-
-### 7. Accéder à l'application
-
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:8000/api
-- **Nginx (prod):** http://localhost:80
-
-## Commandes utiles
-
-```bash
-# Voir les logs
-docker compose logs -f backend
-docker compose logs -f frontend
-
-# Arrêter les conteneurs
-docker compose down
-
-# Reconstruire les images
-docker compose up -d --build
-
-# Exécuter les tests
-docker compose exec backend php artisan test
-
-# Lancer les workers queue
-docker compose exec backend php artisan queue:work
-
-# Accéder au shell backend
-docker compose exec backend bash
-
-# Accéder au shell frontend
-docker compose exec frontend sh
-```
-
-## Comptes de test
-
-| Rôle  | Email              | Mot de passe |
-|-------|--------------------|--------------|
-| Admin | admin@mercado.ma   | password123  |
-| Client| client@mercado.ma  | password123  |
-
-## Structure du projet
+## Project Structure
 
 ```
-├── backend/          # API Laravel
-├── frontend/         # Application Vue.js
-├── nginx/            # Configuration Nginx
+├── backend/          # Laravel API
+├── frontend/         # Vue.js SPA
+├── nginx/            # Nginx configuration
 └── docker-compose.yml
 ```
 
-## API Endpoints
+## API Documentation
 
-### Authentification
-- `POST /api/auth/register` - Inscription
-- `POST /api/auth/login` - Connexion
-- `POST /api/auth/logout` - Déconnexion
-- `GET /api/auth/user` - Utilisateur connecté
-
-### Produits
-- `GET /api/produits` - Liste produits (paginée, filtres)
-- `GET /api/produits/en-vedette` - Produits en vedette
-- `GET /api/produits/{slug}` - Détail produit
-
-### Catégories
-- `GET /api/categories` - Toutes les catégories
-- `GET /api/categories/{slug}` - Détail catégorie
-
-### Commandes
-- `GET /api/commandes` - Mes commandes (auth)
-- `POST /api/commandes` - Créer une commande
-
-### Panier
-- `GET /api/panier` - Contenu du panier
-- `POST /api/panier/ajouter` - Ajouter au panier
-- `PUT /api/panier/{rowId}` - Modifier quantité
-- `DELETE /api/panier/{rowId}` - Supprimer du panier
+See [docs/API.md](docs/API.md) for endpoint documentation.
 
 ## License
 
