@@ -76,3 +76,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });
 
+
+// Health check
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok', 'timestamp' => now()]);
+});
