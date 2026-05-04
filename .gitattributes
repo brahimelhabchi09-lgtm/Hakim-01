@@ -1,0 +1,23 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Backend
+*.php text
+*.blade.php text
+*.env text
+*.json text
+*.yml text
+*.xml text
+
+# Frontend
+*.js text
+*.vue text
+*.css text
+*.html text
+
+# Images
+*.jpg binary
+*.png binary
+*.gif binary
+*.svg binary
+*.ico binary
