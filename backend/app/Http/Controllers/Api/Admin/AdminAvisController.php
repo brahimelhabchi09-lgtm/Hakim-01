@@ -47,6 +47,20 @@ class AdminAvisController extends Controller
         ]);
     }
 
+    public function destroy($id): JsonResponse
+    {
+        $avis = Avis::findOrFail($id);
+        $produitId = $avis->produit_id;
+
+        $avis->delete();
+
+        $this->updateProduitRating($produitId);
+
+        return response()->json([
+            'message' => 'Avis supprime.',
+        ]);
+    }
+
     private function updateProduitRating(int $produitId): void
     {
         $produit = \App\Models\Produit::find($produitId);
