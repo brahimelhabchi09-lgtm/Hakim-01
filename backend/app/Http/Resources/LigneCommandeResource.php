@@ -16,7 +16,7 @@ class LigneCommandeResource extends JsonResource
             'produit' => $this->whenLoaded('produit', fn() => [
                 'id' => $this->produit->id,
                 'nom' => $this->produit->nom,
-                'image_principale' => $this->produit->image_principale ? asset('storage/' . $this->produit->image_principale) : null,
+                'image' => $this->produit->image ? asset('storage/' . $this->produit->image) : null,
             ]),
             'produit_id' => $this->produit_id,
             'quantite' => $this->quantite,
