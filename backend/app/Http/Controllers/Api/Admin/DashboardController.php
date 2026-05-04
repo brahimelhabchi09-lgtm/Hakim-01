@@ -38,9 +38,8 @@ class DashboardController extends Controller
 
         $produits = [
             'total' => Produit::count(),
-            'actifs' => Produit::where('actif', true)->count(),
-            'low_stock' => Produit::where('stock', '<=', 5)->where('actif', true)->count(),
-            'rupture' => Produit::where('stock', 0)->where('actif', true)->count(),
+            'low_stock' => Produit::where('stock', '<=', 5)->count(),
+            'rupture' => Produit::where('stock', 0)->count(),
         ];
 
         $avis = [
