@@ -24,17 +24,11 @@ class PanierController extends Controller
     public function ajouter(Request $request): JsonResponse
     {
         $request->validate([
-            'produit_id' => 'required|exists:produits,id',
+            'produit_id' => 'required|integer|exists:produits,id',
             'quantite' => 'required|integer|min:1',
         ]);
 
         $produit = Produit::findOrFail($request->produit_id);
-
-        if (!$produit->actif) {
-            return response()->json([
-                'message' => 'Ce produit n\'est pas disponible.',
-            ], 400);
-        }
 
         if ($produit->stock < $request->quantite) {
             return response()->json([
