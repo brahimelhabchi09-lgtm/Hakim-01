@@ -24,9 +24,6 @@ class AdminProduitController extends Controller
             $query->where('category_id', $request->category);
         }
 
-        if ($request->filled('actif') !== null) {
-            $query->where('actif', $request->boolean('actif'));
-        }
 
         return response()->json(ProduitResource::collection($query->paginate($request->get('per_page', 15))));
     }
@@ -34,14 +31,13 @@ class AdminProduitController extends Controller
     public function store(ProduitRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $data['slug'] = Str::slug($data['nom']);
 
-        if ($request->hasFile('image_principale')) {
-            $data['image_principale'] = $request->file('image_principale')->store('produits', 'public');
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('produits', 'public');
         }
 
-        if ($request->hasFile('images_galerie')) {
-            $data['images_galerie'] = collect($request->file('images_galerie'))
+        if ($request->hasFile('images')) {
+            $data['images'] = collect($request->file('images'))
                 ->map(fn($file) => $file->store('produits/galerie', 'public'))
                 ->toArray();
         }
@@ -76,20 +72,20 @@ class AdminProduitController extends Controller
         $produit = Produit::findOrFail($id);
         $data = $request->validated();
 
-        if ($request->hasFile('image_principale')) {
-            if ($produit->image_principale) {
-                \Storage::disk('public')->delete($produit->image_principale);
+        if ($request->hasFile('image')) {
+            if ($produit->image) {
+                \Storage::disk('public')->delete($produit->image);
             }
-            $data['image_principale'] = $request->file('image_principale')->store('produits', 'public');
+            $data['image'] = $request->file('image')->store('produits', 'public');
         }
 
-        if ($request->hasFile('images_galerie')) {
-            if ($produit->images_galerie) {
-                foreach ($produit->images_galerie as $img) {
+        if ($request->hasFile('images')) {
+            if ($produit->images) {
+                foreach ($produit->images as $img) {
                     \Storage::disk('public')->delete($img);
                 }
             }
-            $data['images_galerie'] = collect($request->file('images_galerie'))
+            $data['images'] = collect($request->file('images'))
                 ->map(fn($file) => $file->store('produits/galerie', 'public'))
                 ->toArray();
         }
@@ -114,12 +110,12 @@ class AdminProduitController extends Controller
     {
         $produit = Produit::findOrFail($id);
 
-        if ($produit->image_principale) {
-            \Storage::disk('public')->delete($produit->image_principale);
+        if ($produit->image) {
+            \Storage::disk('public')->delete($produit->image);
         }
 
-        if ($produit->images_galerie) {
-            foreach ($produit->images_galerie as $img) {
+        if ($produit->images) {
+            foreach ($produit->images as $img) {
                 \Storage::disk('public')->delete($img);
             }
         }
