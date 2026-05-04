@@ -1,29 +1,39 @@
 FROM php:8.2-fpm
 
+# Install dependencies including oniguruma
 RUN apt-get update && apt-get install -y \
     git \
     curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
     zip \
-    unzip
+    unzip \
+    libpq-dev \
+    libonig-dev \
+    zlib1g-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Install PHP extensions
+RUN docker-php-ext-install pdo_pgsql pdo_mysql mbstring exif pcntl bcmath gd \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
+# Install Redis extension
+RUN pecl install redis && docker-php-ext-enable redis;
 
-RUN pecl install redis && docker-php-ext-enable redis
-
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+# Copy application
 COPY . .
 
+# Install PHP dependencies
 RUN composer install --no-scripts --no-autoloader --ignore-platform-reqs || true
 
-RUN if [ ! -f .env ]; then cp .env.example .env; fi
+# Generate artisan key if needed
+RUN if [ ! -f .env ]; then cp .env.example .env; fi;
 
 EXPOSE 8000
 
