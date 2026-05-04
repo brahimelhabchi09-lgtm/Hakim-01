@@ -9,18 +9,23 @@ services:
     volumes:
       - ./backend:/var/www/html
     environment:
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_DATABASE=mundo_br
-      - DB_USERNAME=mundo
+      - DB_CONNECTION=pgsql
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=wolfstore_br
+      - DB_USERNAME=wolfstore_user
       - DB_PASSWORD=secret
       - REDIS_HOST=redis
+      - REDIS_PASSWORD=redispass123
       - REDIS_PORT=6379
       - CACHE_DRIVER=redis
       - SESSION_DRIVER=redis
       - QUEUE_CONNECTION=redis
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     depends_on:
-      mysql:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_started
@@ -43,20 +48,19 @@ services:
     networks:
       - app-network
 
-  mysql:
-    image: mysql:8.0
-    container_name: mundo_mysql
+  postgres:
+    image: postgres:16-alpine
+    container_name: mundo_postgres
     ports:
-      - "3307:3306"
+      - "5433:5432"
     environment:
-      - MYSQL_DATABASE=mundo_br
-      - MYSQL_USER=mundo
-      - MYSQL_PASSWORD=secret
-      - MYSQL_ROOT_PASSWORD=root
+      - POSTGRES_DB=wolfstore_br
+      - POSTGRES_USER=wolfstore_user
+      - POSTGRES_PASSWORD=secret
     volumes:
-      - mysql-data:/var/lib/mysql
+      - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD-SHELL", "pg_isready -U wolfstore_user"]
       timeout: 20s
       retries: 10
     networks:
@@ -67,8 +71,38 @@ services:
     container_name: mundo_redis
     ports:
       - "6379:6379"
+    command: redis-server --requirepass redispass123
     volumes:
       - redis-data:/data
+    networks:
+      - app-network
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mundo_mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    environment:
+      - MAILPIT_SMTP_AUTH_ACCEPT_ANY=1
+      - MAILPIT_SMTP_AUTH_ALLOW_INSECURE=1
+    networks:
+      - app-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: mundo_pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL:-admin@admin.com}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-changeme123}
+      - PGADMIN_CONFIG_SERVER_MODE=False
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -88,8 +122,9 @@ services:
     restart: unless-stopped
 
 volumes:
-  mysql-data:
+  postgres-data:
   redis-data:
+  pgadmin-data:
 
 networks:
   app-network:
